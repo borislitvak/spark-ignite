@@ -69,3 +69,17 @@ $ spark-submit --class "net.szecsenyi.RDDProducer"  --master spark://spark-maste
 $ spark-submit --class "net.szecsenyi.RDDConsumer"  --master spark://spark-master:7077 path_to_jar
 ```
 
+### Filtering data
+If we use an Ignite RDD, and execute a filter, then the filter will be pushed down to Ignite server. 
+
+```Java
+JavaIgniteContext<Integer, Integer> igniteContext = new JavaIgniteContext<Integer, Integer>(
+            sparkContext,"examples/config/spark/example-shared-rdd.xml", false);
+JavaIgniteRDD<Integer, Integer> sharedRDD = igniteContext.<Integer, Integer>fromCache("sharedRDD");
+JavaPairRDD<Integer, Integer> transformedValues =
+            sharedRDD.filter(new Function<Tuple2<Integer, Integer>, Boolean>() {
+                @Override public Boolean call(Tuple2<Integer, Integer> tuple) throws Exception {
+                    return tuple._2() % 2 == 0;
+                }
+            });
+```
